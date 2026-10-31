@@ -1,0 +1,13 @@
+{
+  "schema": "czn-collector-profile-v1",
+  "id": "stove-6f951e93-p07-v1",
+  "targetName": "ssr-stove-shield.exe",
+  "targetSHA256": "6f951e93c7ca9d5976d758df0bbe8c737f05e1227dbe50d5c25c515341612b78",
+  "resourceManifestRelative": "appdata/cznlive/gameres/manifest.ssra",
+  "resourceManifestSHA256": "9ce746b75d502f4dfbed73a66a3c01ee90355af006c42ce85caa78bf84492974",
+  "templateSHA256": "9950615bc747044388bc26b44c8de5bd864b8b7fe29fbae25f23cb683f0c8b3e",
+  "fridaVersion": "17.23.2",
+  "distributionStatus": "candidate-offline-verified-awaiting-first-live-capture",
+  "liveAcceptance": false,
+  "maxPayloadBytes": 1048576
+}

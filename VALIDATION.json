@@ -1,0 +1,11 @@
+{
+  "scope": "Collector only; no game process accessed in repository publication",
+  "historicalOfflineTestsPassed": 14,
+  "wrongTargetParserTestsPassed": 2,
+  "portableDependencyCheckPassed": true,
+  "archiveCRCChecked": true,
+  "liveAcceptance": false,
+  "asset": "czn-battle-collector-0.1.0-preview.zip",
+  "assetSHA256": "44916511b6bdf2403365767cac61deb26d181866263e9775853ec39456277a40",
+  "assetBytes": 60678584
+}

@@ -1,0 +1,15 @@
+Local bundle dependencies (no network download during packaging)
+
+Python 3.11: Python Software Foundation license; see runtime/LICENSE.txt.
+https://www.python.org/
+
+Frida Python bindings 17.23.2: license and upstream metadata shipped in
+vendor/frida-17.23.2.dist-info/licenses/COPYING and METADATA.
+https://github.com/frida/frida-python
+Frida source and build instructions: https://github.com/frida/frida
+
+psutil: license and upstream metadata shipped in vendor/psutil-*.dist-info.
+https://github.com/giampaolo/psutil
+
+This tool's Python/JavaScript host sources are provided alongside the runtime.
+It does not include the game executable or the game's resource tables.

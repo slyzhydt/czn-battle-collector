@@ -1,0 +1,22 @@
+# Local captures and identifiers must never enter source control.
+data/
+exports/
+runtime/
+vendor/
+dist/
+__pycache__/
+*.py[cod]
+*.zip
+*.exe
+*.dll
+*.pyd
+*.log
+*.pt
+*.pth
+*.onnx
+.env
+.env.*
+.venv/
+venv/
+*token*
+*credential*
