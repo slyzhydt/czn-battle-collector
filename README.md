@@ -53,3 +53,7 @@ python -B build_portable.py dist/collector
 仓库初始为私有，仅所有者管理；不自动邀请协作者。自动检查使用只读仓库权限，代码检出依赖固定到提交。主分支保护需要在 GitHub 设置中实际启用，配置说明本身不代表已生效；以仓库设置及交付回读结果为准。
 
 运行包校验值见 `SHA256SUMS`；依赖及许可见 `THIRD_PARTY.txt` 和运行包内许可文件。
+
+## 开源协议
+
+本项目自有源码采用 [MIT License](LICENSE)。第三方依赖仍遵循各自的许可证，详见 [THIRD_PARTY.txt](THIRD_PARTY.txt)；本项目协议不授予游戏本体或游戏资源的权利。

@@ -1,5 +1,8 @@
 Local bundle dependencies (no network download during packaging)
 
+Project-owned source code: MIT License; see LICENSE.
+Third-party components retain their respective licenses listed below.
+
 Python 3.11: Python Software Foundation license; see runtime/LICENSE.txt.
 https://www.python.org/
 
