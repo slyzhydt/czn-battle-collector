@@ -19,7 +19,7 @@
       "resourceManifestSHA256": "adec4b24cc118dfae6b6a20bda5cd70ce5d7c2ad6d4d090d511e34678ddda75e",
       "scriptChunkRelative": "appdata/cznlive/gameres/chunks/bin_x86_64_b00_0.ssrc",
       "scriptChunkSHA256": "b77fa7ef1aee51fa44bc5ba55639d09d0da2fe32df348f5c8265f5ed749ce773",
-      "distributionStatus": "static-binding-compatibility-verified-awaiting-first-live-capture",
+      "distributionStatus": "runtime-read-observed-pairing-fix-under-validation",
       "liveAcceptance": false,
       "staticCompatibility": {
         "nativeFingerprintsMatched": 26,
@@ -27,6 +27,13 @@
         "decodedBindingFunctions": 323,
         "runtimeValidationPerformed": false,
         "opaqueSerializerScalarDifferencesRetained": true
+      },
+      "runtimeReadObserved": true,
+      "runtimeReadEvidence": {
+        "captures": 3,
+        "releaseUnloadDetachConfirmed": true,
+        "userReportedHealth": "normal",
+        "exportPipelineFullyAccepted": false
       }
     }
   ]

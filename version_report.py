@@ -71,6 +71,7 @@ def select_candidate_profile(path, root, candidate):
         if chunk['status']!='match':return None
     candidate['matchedProfileId']=selected['id']
     candidate['runtimeVerified']=selected.get('liveAcceptance',False)
+    candidate['runtimeReadObserved']=selected.get('runtimeReadObserved',False)
     return selected
 
 
@@ -126,7 +127,9 @@ def render(report, destination):
                 lines.extend(['   预期 SHA256：'+value['expectedSHA256'],'   实际 SHA256：'+value['actualSHA256']])
         if candidate.get('matchedProfileId'):
             lines.append('   已匹配兼容配置：'+candidate['matchedProfileId'])
-            if candidate.get('runtimeVerified') is not True:
+            if candidate.get('runtimeReadObserved') is True:
+                lines.append('   读取通道已有实际采集记录；每份数据仍需离线重放核对。')
+            elif candidate.get('runtimeVerified') is not True:
                 lines.append('   此配置仍需首场实际采集确认；文件匹配不等于已完成实机验证。')
     if report.get('matchingProcessCount',1)!=1 and report['candidates']:
         lines.append('找到的游戏进程数不是 1，请关闭多开的客户端后再检查。')

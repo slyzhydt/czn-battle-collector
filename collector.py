@@ -16,7 +16,7 @@ from domain import opening_info, pair_info, validate_opening_config
 from version_report import write_report
 
 DATA = HERE/'data'
-VERSION = '0.1.2'
+VERSION = '0.1.3'
 
 
 def read(path):
@@ -95,7 +95,12 @@ def ending(folder):
             raise ValueError('开场与当前客户端版本不同，不能将跨版本数据配成一场')
     label = 'ending-'+uuid.uuid4().hex[:10]
     capture(folder/label, identity, meta['id'], label, 'snapshot')
-    path, summary = export_pair(folder, folder/label)
+    try:
+        path, summary = export_pair(folder, folder/label)
+    except Exception as error:
+        save(folder/label/'export-error.json',{'phase':'pairing-or-export','type':type(error).__name__,
+             'message':str(error),'recordedDataPreserved':True,'gameAttached':False})
+        raise
     print('\n已导出：'+str(path))
     print('记录操作数：'+str(summary['recordedActions']))
     if summary['terminalObserved']:
@@ -103,6 +108,31 @@ def ending(folder):
     else:
         print('仍未观察到结算，已保存中途数据；结算后可再选 2。')
     print('尚未通过离线重放，不会自动进入训练。')
+
+
+def recover_exports():
+    """Re-export existing captures only; no discovery, Frida, or game reads."""
+    recovered,failed,existing=0,0,0
+    for manifest in sorted(DATA.glob('*/manifest.json')):
+        folder=manifest.parent
+        for ending_data in sorted(folder.glob('ending-*/data.json')):
+            destination=HERE/'exports'/(folder.name+'-'+ending_data.parent.name+'.zip')
+            if destination.exists():
+                existing+=1
+                continue
+            try:
+                path,summary=export_pair(folder,ending_data.parent)
+                recovered+=1
+                print('已恢复导出：'+str(path))
+                print('记录操作数：'+str(summary['recordedActions']))
+            except Exception as error:
+                failed+=1
+                save(ending_data.parent/'export-error.json',{'phase':'offline-recovery','type':type(error).__name__,
+                     'message':str(error),'recordedDataPreserved':True,'gameAttached':False})
+                print('无法恢复 '+folder.name+'：'+str(error))
+    result={'recovered':recovered,'failed':failed,'existing':existing,'gameAttached':False}
+    print(f'恢复完成：新导出 {recovered} 份，已有 {existing} 份，待处理 {failed} 份。未连接游戏。')
+    return result
 
 
 def choose_pending():
@@ -132,7 +162,11 @@ def check_dependencies():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--self-check', action='store_true', help='只检查工具依赖，不连接游戏')
+    parser.add_argument('--recover-exports',action='store_true',help='从已保存数据恢复导出，不连接游戏')
     args = parser.parse_args()
+    if args.recover_exports:
+        recover_exports()
+        return
     if args.self_check:
         print(json.dumps(check_dependencies(), ensure_ascii=False))
         return
@@ -141,7 +175,7 @@ def main():
     print('只支持已核对的 PC 客户端版本。所有文件留在本机，不自动上传。')
     print('首次请先采一场交回验证，再让大家批量采集。\n')
     while True:
-        print('\n1 记录新开场（手牌已出现，尚未手动出牌）\n2 记录结算并导出\n3 检查游戏版本（不连接）\n0 退出')
+        print('\n1 记录新开场（手牌已出现，尚未手动出牌）\n2 记录结算并导出\n3 检查游戏版本（不连接）\n4 从已有数据恢复导出（不连接游戏）\n0 退出')
         try:
             choice = input('请选择：').strip()
             if choice=='0':
@@ -155,6 +189,8 @@ def main():
                 ending(choose_pending())
             elif choice=='3':
                 write_report()
+            elif choice=='4':
+                recover_exports()
         except (EOFError, KeyboardInterrupt):
             return
         except Exception as error:

@@ -22,7 +22,7 @@ def build(destination, frida_root=None):
     if destination.exists():raise FileExistsError('Use a new release directory')
     destination.mkdir(parents=True)
     app=destination/'battle-collector';app.mkdir()
-    for name in ['collector.py','native_host.py','domain.py','export_supervisor.py','intake.py','profile.json','agent-template.js','version_report.py','版本检查.cmd','使用说明.txt','LICENSE']:
+    for name in ['collector.py','native_host.py','domain.py','export_supervisor.py','intake.py','profile.json','agent-template.js','version_report.py','版本检查.cmd','恢复导出.cmd','使用说明.txt','LICENSE']:
         shutil.copy2(HERE/name,app/name)
     runtime=app/'runtime';runtime.mkdir()
     pyhome=Path(sys.executable).parent
