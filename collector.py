@@ -13,6 +13,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE/'vendor'))
 from native_host import capture, discover, profile, save, sha
 from domain import opening_info, pair_info, validate_opening_config
+from version_report import write_report
 
 DATA = HERE/'data'
 
@@ -147,12 +148,12 @@ def main():
             elif choice=='2':
                 ending(choose_pending())
             elif choice=='3':
-                discover()
-                print('游戏版本匹配，未连接游戏。')
+                write_report()
         except (EOFError, KeyboardInterrupt):
             return
         except Exception as error:
             print('\n未完成：'+str(error))
+            print('若提示版本不同，选 3 或运行“版本检查.cmd”，将生成 logs/version-check.json。')
             print('已有数据保留在 data 文件夹。读取异常时不要反复重试，先把错误交给维护者。')
 
 

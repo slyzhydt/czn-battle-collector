@@ -20,6 +20,6 @@ jobs:
         with:
           persist-credentials: false
       - name: Check Python syntax
-        run: python3 -m compileall -q collector.py native_host.py domain.py export_supervisor.py intake.py build_portable.py
+        run: python3 -m compileall -q collector.py native_host.py domain.py export_supervisor.py intake.py build_portable.py version_report.py
       - name: Check collector boundaries with synthetic fixtures
         run: python3 -B -m unittest discover -s tests -v
