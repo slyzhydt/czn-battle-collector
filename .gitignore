@@ -1,6 +1,7 @@
 # Local captures and identifiers must never enter source control.
 data/
 exports/
+logs/
 runtime/
 vendor/
 dist/
