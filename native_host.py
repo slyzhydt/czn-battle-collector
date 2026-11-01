@@ -10,6 +10,7 @@ import threading
 import time
 
 from export_supervisor import OwnershipUnknown, supervise, strict_json
+from version_report import inspect_candidate, known_profiles, select_candidate_profile
 
 HERE = Path(__file__).resolve().parent
 
@@ -25,6 +26,14 @@ def save(path, value):
 
 def profile():
     return json.loads((HERE/'profile.json').read_text(encoding='utf-8'))
+
+
+def active_profile(identity):
+    root=profile()
+    wanted=identity.get('profileId',root['id'])
+    matches=[p for p in known_profiles(root) if p['id']==wanted]
+    if len(matches)!=1:raise ValueError('当前进程的兼容配置不可用')
+    return matches[0]
 
 
 def prepare_source(identity, request):
@@ -67,11 +76,11 @@ def discover():
     if len(found) != 1:
         raise ValueError('需要恰好一个正在运行的受支持游戏进程；当前找到 '+str(len(found))+' 个')
     item = found[0]
-    if sha(item['path']) != p['targetSHA256']:
-        raise ValueError('游戏程序版本与已核对版本不同，未连接游戏。请把检查报告交给工具维护者')
-    manifest = Path(item['path']).parent / p['resourceManifestRelative']
-    if not manifest.is_file() or sha(manifest) != p['resourceManifestSHA256']:
-        raise ValueError('游戏资源版本不同，未连接游戏。需要先适配此版本')
+    candidate=inspect_candidate(item['path'],p)
+    selected=select_candidate_profile(item['path'],p,candidate)
+    if selected is None:
+        raise ValueError('程序、资源清单或主脚本包未匹配已核对的兼容组合。请运行“版本检查.cmd”，提交 logs/version-check.json')
+    item['profileId']=selected['id']
     return item
 
 
@@ -129,7 +138,7 @@ class BoundedRPC:
 def capture(folder, identity, capture_id, request_id, kind, emit=print):
     import frida
     import psutil
-    p = profile()
+    p = active_profile(identity)
     if frida.__version__ != p['fridaVersion']:
         raise ValueError('采集依赖版本不匹配')
     request = dict(kind=kind, captureSetId=capture_id, requestId=request_id, cacheRoot='module:GameDataStore',

@@ -4,7 +4,7 @@
 
 ## 下载与使用
 
-Windows x64 免安装包在 [Releases](https://github.com/slyzhydt/czn-battle-collector/releases)。请选择 `czn-battle-collector-0.1.0-preview.zip`，不是 GitHub 自动生成的源码压缩包。
+Windows x64 免安装包在 [Releases](https://github.com/slyzhydt/czn-battle-collector/releases)。新安装请选择 `czn-battle-collector-0.1.2-preview.zip`；已有旧版可用较小的 `czn-client-compatibility-patch-0.1.2.zip` 覆盖更新。GitHub 自动生成的源码压缩包不含运行环境。
 
 1. 解压整个工具包，双击 **启动采集.cmd**。
 2. 正常进入战斗，等开幕效果结束、手牌出现，暂不出牌或结束回合。
@@ -22,6 +22,12 @@ Windows x64 免安装包在 [Releases](https://github.com/slyzhydt/czn-battle-co
 旧 v0.1.0 运行包可以从 Releases 下载小诊断补丁，将补丁中的 `version_report.py` 和 `版本检查.cmd` 放到 `collector.py` 同一目录后运行。报告只在本机生成，不自动上传；用户目录前缀会替换为 `%USERPROFILE%`，其他安装文件夹名仍保留。
 
 “程序不同”和“资源不同”是两项独立结果。文件哈希不能直接证明是更新、不同渠道、热修复还是本地修改，需要结合对方的报告判断；不要修改 `profile.json` 跳过版本限制。
+
+### 已核对的新客户端组合
+
+v0.1.2 兼容补丁增加了程序指纹以 `0e5ba239`、资源清单指纹以 `adec4b24` 开头的组合，并额外核对主脚本块。26 处原生指纹和读取所依赖的 11 个模块已完成静态对照；新组合仍待首次实际采集确认。安装路径或脚本不同的其他组合不会自动放行。
+
+对方已有旧采集器时，将兼容补丁解压覆盖到 `collector.py` 所在目录即可，保留原有 `runtime`、`vendor`、`data`。运行“版本检查.cmd”，应同时显示程序、资源清单和主脚本包匹配，再先采一场普通战斗作验证。采集包会保存本次实际匹配的版本标识；开场、结算跨版本时会拒绝配对。新版本原始记录仍需相应资源和规则重放后才能用于训练。
 
 ## 范围与限制
 

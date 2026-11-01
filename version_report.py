@@ -44,6 +44,36 @@ def inspect_candidate(path, profile):
             'resourceManifest':inspect_file(exe.parent/profile['resourceManifestRelative'],profile['resourceManifestSHA256'])}
 
 
+def known_profiles(root):
+    base={key:value for key,value in root.items() if key!='compatibleProfiles'}
+    return [base]+[{**base,**entry} for entry in root.get('compatibleProfiles',[])]
+
+
+def select_candidate_profile(path, root, candidate):
+    """An exact reviewed file tuple is required; similar native code alone never admits it."""
+    variants=known_profiles(root)
+    exe_hash=candidate['executable'].get('actualSHA256')
+    manifest_hash=candidate['resourceManifest'].get('actualSHA256')
+    nearest=next((v for v in variants if v['targetSHA256']==exe_hash),variants[0])
+    for key,field in [('executable','targetSHA256'),('resourceManifest','resourceManifestSHA256')]:
+        item=candidate[key];item['expectedSHA256']=nearest[field]
+        if item['status'] in ('match','mismatch'):
+            item['status']='match' if item['actualSHA256']==nearest[field] else 'mismatch'
+    matches=[v for v in variants if v['targetSHA256']==exe_hash and v['resourceManifestSHA256']==manifest_hash]
+    if len(matches)>1:raise ValueError('兼容配置存在重复的程序/资源组合')
+    candidate['matchedProfileId']=None
+    if len(matches)!=1 or any(candidate[k]['status']!='match' for k in ('executable','resourceManifest')):
+        return None
+    selected=matches[0]
+    if 'scriptChunkRelative' in selected:
+        chunk=inspect_file(Path(path).parent/selected['scriptChunkRelative'],selected['scriptChunkSHA256'])
+        candidate['scriptChunk']=chunk
+        if chunk['status']!='match':return None
+    candidate['matchedProfileId']=selected['id']
+    candidate['runtimeVerified']=selected.get('liveAcceptance',False)
+    return selected
+
+
 def build_report(profile, executable=None):
     report = {'schema':'czn-version-check-v1','createdUtc':datetime.now(timezone.utc).isoformat(),
               'profileId':profile['id'],'targetName':profile['targetName'],
@@ -69,9 +99,13 @@ def build_report(profile, executable=None):
                 report['processErrors'].append({'status':'exited-before-inspection'})
             except psutil.AccessDenied:
                 report['processErrors'].append({'status':'process-access-denied'})
-    report['candidates']=[inspect_candidate(path,profile) for path in paths]
+    selected=[]
+    for path in paths:
+        candidate=inspect_candidate(path,profile)
+        selected.append(select_candidate_profile(path,profile,candidate))
+        report['candidates'].append(candidate)
     unique_process = executable is not None or report.get('matchingProcessCount')==1
-    files_match = len(paths)==1 and all(x['status']=='match' for x in report['candidates'][0].values())
+    files_match = len(selected)==1 and selected[0] is not None
     report['compatibleWithCurrentProfile']=bool(unique_process and files_match and not report['processErrors'])
     report['interpretation']='Hashes identify file differences; they do not identify whether the cause is an update, channel, hotfix or local modification.'
     return report
@@ -84,11 +118,16 @@ def render(report, destination):
     if not report['candidates']:
         lines.append('未找到可读取的目标程序。请正常启动游戏停在主界面后再运行；不需要进入战斗。')
     for index,candidate in enumerate(report['candidates'],1):
-        for key,label in [('executable','游戏程序'),('resourceManifest','资源清单')]:
+        for key,label in [('executable','游戏程序'),('resourceManifest','资源清单'),('scriptChunk','主脚本包')]:
+            if key not in candidate:continue
             value=candidate[key]
             lines.extend([f"{index}. {label}：{statuses[value['status']]}", '   文件：'+value['path']])
             if value['status']=='mismatch':
                 lines.extend(['   预期 SHA256：'+value['expectedSHA256'],'   实际 SHA256：'+value['actualSHA256']])
+        if candidate.get('matchedProfileId'):
+            lines.append('   已匹配兼容配置：'+candidate['matchedProfileId'])
+            if candidate.get('runtimeVerified') is not True:
+                lines.append('   此配置仍需首场实际采集确认；文件匹配不等于已完成实机验证。')
     if report.get('matchingProcessCount',1)!=1 and report['candidates']:
         lines.append('找到的游戏进程数不是 1，请关闭多开的客户端后再检查。')
     if report['processErrors']:
