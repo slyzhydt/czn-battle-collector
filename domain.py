@@ -33,12 +33,43 @@ def validate_snapshot(snapshot):
 
 
 def identity(snapshot):
-    """Only immutable encounter identity, not turn-varying HP, deck or resource caches."""
+    """Encounter stamps plus current wave ID, which may advance within one battle."""
     init = table(snapshot, 'BattleInitWorktable')['battle_init']
     keys = ('seed', 'battle_res_id', 'enter_time', 'stage_enter_time', 'first_enter_time', 'spot_id', 'floor', 'area_id')
     if any(k not in init for k in ('seed', 'battle_res_id', 'enter_time')):
         raise ValueError('缺少配对所需的战斗身份；不能猜测为同一场')
     return {k: init[k] for k in keys if k in init}
+
+
+def wave_progression(opening, later):
+    """Prove a current resource-ID change follows the captured wave sequence."""
+    a,b=battle(opening),battle(later)
+    start,end=a.get('battle_step_mode'),b.get('battle_step_mode')
+    if not isinstance(start,dict) or not isinstance(end,dict) or start.get('type')!='BATTLE_STEP_WAVE_MODE' or end.get('type')!=start['type']:
+        raise ValueError('战斗编号变化，但没有可核对的同场波次信息')
+    ids=start.get('battle_ids')
+    if not isinstance(ids,list) or not ids or any(not isinstance(x,str) or not x for x in ids) or end.get('battle_ids')!=ids:
+        raise ValueError('开场与结算的波次列表不同，不能配对')
+    first,last=start.get('cur'),end.get('cur')
+    if type(first)is not int or type(last)is not int or not 0<=first<len(ids) or not first<=last<=len(ids):
+        raise ValueError('波次索引无效或发生回退，不能配对')
+    terminal=isinstance(b.get('game_result'),str) and b['game_result']!='BATTLE_RESULT_TYPE_NONE'
+    if last==len(ids) and not terminal:
+        raise ValueError('波次标记已结束，但还没有结算结果')
+    ia,ib=identity(opening),identity(later)
+    if ia['battle_res_id']!=ids[first] or ib['battle_res_id']!=ids[min(last,len(ids)-1)]:
+        raise ValueError('当前战斗编号不符合已记录的波次顺序')
+    if type(a.get('first_unit_id'))is not int or a['first_unit_id']!=b.get('first_unit_id'):
+        raise ValueError('战斗实例起始编号不同，不能当作同场换波')
+    for key in ('last_unit_id','last_action_id'):
+        if type(a.get(key))is not int or type(b.get(key))is not int or b[key]<a[key]:
+            raise ValueError('战斗实例计数回退，不能当作同场换波')
+    sa=table(opening,'BattleStageWorktable')['battle_stage']
+    sb=table(later,'BattleStageWorktable')['battle_stage']
+    for key in ('stage_id','ingame_content_config_id','story_simulation_info'):
+        if sa.get(key)!=sb.get(key):raise ValueError('战斗场景身份不同，不能当作同场换波')
+    return {'type':start['type'],'battleIds':ids,'fromIndex':first,'toIndex':last,
+            'initialBattleId':ia['battle_res_id'],'endingBattleId':ib['battle_res_id']}
 
 
 def group_key(snapshot, profile):
@@ -77,15 +108,21 @@ def validate_opening_config(snapshot, config):
 
 def pair_info(opening, later):
     a, b = validate_snapshot(opening), validate_snapshot(later)
-    if identity(opening) != identity(later):
+    ia,ib=identity(opening),identity(later)
+    if {k:v for k,v in ia.items()if k!='battle_res_id'}!={k:v for k,v in ib.items()if k!='battle_res_id'}:
         raise ValueError('这不是开场记录的那一场；不能把两场拼接')
+    progression=None
+    if ia['battle_res_id']!=ib['battle_res_id']:
+        progression=wave_progression(opening,later)
     prefix, trail = a['user_actions'], b['user_actions']
     if trail[:len(prefix)] != prefix or b['turn'] < a['turn']:
         raise ValueError('操作记录或回合发生回退；需作为新采集处理')
     result = b.get('game_result')
     terminal = isinstance(result, str) and result != 'BATTLE_RESULT_TYPE_NONE'
-    return {'paired': True, 'terminalObserved': terminal, 'gameResult': result,
+    result={'paired': True, 'terminalObserved': terminal, 'gameResult': result,
             'turn': b['turn'], 'recordedActions': len(trail)-len(prefix),
             'replayVerified': False, 'trainingReady': False,
             'admission': 'pending-offline-replay-and-resource-coverage',
             'damage': b.get('dpt', {}).get('total_damage')}
+    if progression is not None:result['waveProgression']=progression
+    return result

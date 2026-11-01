@@ -4,7 +4,7 @@
 
 ## 下载与使用
 
-Windows x64 免安装包在 [Releases](https://github.com/slyzhydt/czn-battle-collector/releases)。新安装请选择 `czn-battle-collector-0.1.2-preview.zip`；已有旧版可用较小的 `czn-client-compatibility-patch-0.1.2.zip` 覆盖更新。GitHub 自动生成的源码压缩包不含运行环境。
+Windows x64 免安装包在 [Releases](https://github.com/slyzhydt/czn-battle-collector/releases)。新安装请选择 `czn-battle-collector-0.1.3-preview.zip`；已有 v0.1.2 可用较小的 `czn-wave-export-fix-0.1.3.zip` 覆盖更新。更早版本先安装 v0.1.2 兼容补丁。GitHub 自动生成的源码压缩包不含运行环境。
 
 1. 解压整个工具包，双击 **启动采集.cmd**。
 2. 正常进入战斗，等开幕效果结束、手牌出现，暂不出牌或结束回合。
@@ -28,6 +28,12 @@ Windows x64 免安装包在 [Releases](https://github.com/slyzhydt/czn-battle-co
 v0.1.2 兼容补丁增加了程序指纹以 `0e5ba239`、资源清单指纹以 `adec4b24` 开头的组合，并额外核对主脚本块。26 处原生指纹和读取所依赖的 11 个模块已完成静态对照；新组合仍待首次实际采集确认。安装路径或脚本不同的其他组合不会自动放行。
 
 对方已有旧采集器时，将兼容补丁解压覆盖到 `collector.py` 所在目录即可，保留原有 `runtime`、`vendor`、`data`。运行“版本检查.cmd”，应同时显示程序、资源清单和主脚本包匹配，再先采一场普通战斗作验证。采集包会保存本次实际匹配的版本标识；开场、结算跨版本时会拒绝配对。新版本原始记录仍需相应资源和规则重放后才能用于训练。
+
+### 多波战斗提示“不是开场记录的那一场”
+
+v0.1.3 修复了同场换波会改变当前战斗资源编号、导致旧版拒绝导出的问题。只在种子与进入时间相同、波次列表及索引相符、实例计数未回退、场景身份一致时允许编号变化；不同场次仍拒绝配对。
+
+已有读取成功的数据不用重采。覆盖补丁后保留 `data` 文件夹，双击 **恢复导出.cmd**，或在菜单选 **4 从已有数据恢复导出**。工具只检查本地回执和数据，再写入 `exports`，不要求启动游戏，也不连接游戏。已有同名 ZIP 会保留；失败原因写入对应结束记录目录的 `export-error.json`。恢复导出不代表通过整场模拟验证或训练准入。
 
 ## 范围与限制
 
