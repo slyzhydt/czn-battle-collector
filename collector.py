@@ -16,7 +16,7 @@ from domain import opening_info, pair_info, validate_opening_config
 from version_report import write_report
 
 DATA = HERE/'data'
-VERSION = '0.1.3'
+VERSION = '0.1.4'
 
 
 def read(path):

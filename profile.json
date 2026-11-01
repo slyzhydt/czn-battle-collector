@@ -35,6 +35,23 @@
         "userReportedHealth": "normal",
         "exportPipelineFullyAccepted": false
       }
+    },
+    {
+      "id": "stove-c40f1ec2-adec4b24-static-v1",
+      "targetSHA256": "c40f1ec2aad5c529b06c4f5ec89f96e1f36264c1f9b30223f51cc3a207736f3f",
+      "resourceManifestSHA256": "adec4b24cc118dfae6b6a20bda5cd70ce5d7c2ad6d4d090d511e34678ddda75e",
+      "scriptChunkRelative": "appdata/cznlive/gameres/chunks/bin_x86_64_b00_0.ssrc",
+      "scriptChunkSHA256": "b77fa7ef1aee51fa44bc5ba55639d09d0da2fe32df348f5c8265f5ed749ce773",
+      "distributionStatus": "candidate-offline-verified-awaiting-first-live-capture",
+      "liveAcceptance": false,
+      "runtimeReadObserved": false,
+      "staticCompatibility": {
+        "nativeFingerprintsMatched": 26,
+        "decodedBindingModulesMatched": 11,
+        "decodedBindingFunctions": 323,
+        "runtimeValidationPerformed": false,
+        "opaqueSerializerScalarDifferencesRetained": true
+      }
     }
   ]
 }
