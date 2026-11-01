@@ -11,11 +11,12 @@ import zipfile
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE/'vendor'))
-from native_host import capture, discover, profile, save, sha
+from native_host import capture, discover, profile, active_profile, save, sha
 from domain import opening_info, pair_info, validate_opening_config
 from version_report import write_report
 
 DATA = HERE/'data'
+VERSION = '0.1.2'
 
 
 def read(path):
@@ -32,15 +33,16 @@ def local_operator():
 
 def new_opening(mode, team, locale):
     identity = discover()
+    selected=active_profile(identity)
     capture_id = uuid.uuid4().hex
     folder = DATA/capture_id
     folder.mkdir(parents=True)
     meta = dict(schema='czn-training-capture-v1', id=capture_id, anonymousOperator=local_operator(),
                 startedUtc=datetime.now(timezone.utc).isoformat(), declaredMode=mode, declaredTeam=team,
-                locale=locale, profile=profile(), state='opening-in-progress', trainingReady=False)
+                locale=locale, profile=selected, state='opening-in-progress', trainingReady=False)
     save(folder/'manifest.json', meta)
     a = capture(folder/'opening', identity, capture_id, 'opening', 'snapshot')
-    info = opening_info(a, profile())
+    info = opening_info(a, selected)
     c = capture(folder/'config', identity, capture_id, 'config', 'config')
     validate_opening_config(a, c)
     meta.update(info, state='opening-collected')
@@ -87,6 +89,10 @@ def export_pair(folder, final_dir):
 def ending(folder):
     meta = read(folder/'manifest.json')
     identity = discover()
+    selected=active_profile(identity)
+    for key in ('targetSHA256','resourceManifestSHA256','scriptChunkSHA256'):
+        if key in meta['profile'] and selected.get(key)!=meta['profile'][key]:
+            raise ValueError('开场与当前客户端版本不同，不能将跨版本数据配成一场')
     label = 'ending-'+uuid.uuid4().hex[:10]
     capture(folder/label, identity, meta['id'], label, 'snapshot')
     path, summary = export_pair(folder, folder/label)
@@ -119,7 +125,7 @@ def check_dependencies():
     import psutil
     if sys.version_info[:2] != (3,11) or frida.__version__ != profile()['fridaVersion']:
         raise ValueError('需要工具包附带的 Python 3.11 和 Frida 17.23.2')
-    return {'python':sys.version.split()[0], 'frida':frida.__version__, 'psutil':psutil.__version__,
+    return {'collectorVersion':VERSION,'python':sys.version.split()[0], 'frida':frida.__version__, 'psutil':psutil.__version__,
             'gameAttached':False, 'profile':profile()['id'], 'liveAcceptance':False}
 
 
@@ -131,7 +137,7 @@ def main():
         print(json.dumps(check_dependencies(), ensure_ascii=False))
         return
     check_dependencies()
-    print('卡厄思战斗采集 v0.1 试用版\n开场与结算各记录一次；读取期间停手，平时工具不连接游戏。')
+    print(f'卡厄思战斗采集 v{VERSION} 兼容试用版\n开场与结算各记录一次；读取期间停手，平时工具不连接游戏。')
     print('只支持已核对的 PC 客户端版本。所有文件留在本机，不自动上传。')
     print('首次请先采一场交回验证，再让大家批量采集。\n')
     while True:

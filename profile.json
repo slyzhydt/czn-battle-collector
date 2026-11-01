@@ -9,5 +9,25 @@
   "fridaVersion": "17.23.2",
   "distributionStatus": "candidate-offline-verified-awaiting-first-live-capture",
   "liveAcceptance": false,
-  "maxPayloadBytes": 1048576
+  "maxPayloadBytes": 1048576,
+  "scriptChunkRelative": "appdata/cznlive/gameres/chunks/bin_x86_64_b00_0.ssrc",
+  "scriptChunkSHA256": "eb3c4d75f17bf208a54ceb9e41fdf32c3ac35f97e34622d95f27aa1d8c25fe38",
+  "compatibleProfiles": [
+    {
+      "id": "stove-0e5ba239-adec4b24-static-v1",
+      "targetSHA256": "0e5ba239a991e393ffacc1d940f9edaf3ade110266950bb7eee0e03d4933729a",
+      "resourceManifestSHA256": "adec4b24cc118dfae6b6a20bda5cd70ce5d7c2ad6d4d090d511e34678ddda75e",
+      "scriptChunkRelative": "appdata/cznlive/gameres/chunks/bin_x86_64_b00_0.ssrc",
+      "scriptChunkSHA256": "b77fa7ef1aee51fa44bc5ba55639d09d0da2fe32df348f5c8265f5ed749ce773",
+      "distributionStatus": "static-binding-compatibility-verified-awaiting-first-live-capture",
+      "liveAcceptance": false,
+      "staticCompatibility": {
+        "nativeFingerprintsMatched": 26,
+        "decodedBindingModulesMatched": 11,
+        "decodedBindingFunctions": 323,
+        "runtimeValidationPerformed": false,
+        "opaqueSerializerScalarDifferencesRetained": true
+      }
+    }
+  ]
 }
