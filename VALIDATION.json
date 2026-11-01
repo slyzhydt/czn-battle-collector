@@ -9,8 +9,17 @@
   "assetSHA256": "44916511b6bdf2403365767cac61deb26d181866263e9775853ec39456277a40",
   "assetBytes": 60678584,
   "latest": {
-    "collectorVersion": "0.1.3",
-    "offlineTestsPassed": 33,
+    "collectorVersion": "0.1.4",
+    "offlineTestsPassed": 36,
+    "additionalClientProfile": {
+      "id": "stove-c40f1ec2-adec4b24-static-v1",
+      "nativeFingerprintsMatched": 26,
+      "sameReviewedScriptChunk": true,
+      "decodedBindingModulesMatched": 11,
+      "decodedBindingFunctions": 323,
+      "runtimeReadObserved": false,
+      "nativePayloadChanged": false
+    },
     "multiWavePairingFixVerified": true,
     "actualRecoveredPackageActions": 17,
     "actualRecoveredPackageTurns": 4,

@@ -70,6 +70,33 @@ class ProfileCompatibilityChecks(unittest.TestCase):
         self.install(b'unknown-exe',b'new-manifest',b'new-code')
         self.assertIsNone(self.select()[0])
 
+    def shared_resource_variant(self):
+        self.profile['compatibleProfiles'][0]['runtimeReadObserved']=True
+        self.profile['compatibleProfiles'].append({'id':'same-resources-other-exe',
+            'targetSHA256':sha(b'other-exe'),'resourceManifestSHA256':sha(b'new-manifest'),
+            'scriptChunkSHA256':sha(b'new-code'),'liveAcceptance':False,'runtimeReadObserved':False})
+
+    def test_shared_resources_select_exact_executable_without_borrowing_live_evidence(self):
+        self.shared_resource_variant()
+        self.install(b'other-exe',b'new-manifest',b'new-code')
+        selected,candidate=self.select()
+        self.assertEqual(selected['id'],'same-resources-other-exe')
+        self.assertEqual(candidate['matchedProfileId'],'same-resources-other-exe')
+        self.assertFalse(candidate['runtimeReadObserved'])
+        self.assertFalse(candidate['runtimeVerified'])
+
+    def test_shared_resources_still_reject_mixed_manifest(self):
+        self.shared_resource_variant()
+        self.install(b'other-exe',b'old-manifest',b'new-code')
+        self.assertIsNone(self.select()[0])
+
+    def test_shared_resources_still_require_matching_script_chunk(self):
+        self.shared_resource_variant()
+        self.install(b'other-exe',b'new-manifest',b'old-code')
+        selected,candidate=self.select()
+        self.assertIsNone(selected)
+        self.assertEqual(candidate['scriptChunk']['status'],'mismatch')
+
     def test_active_metadata_uses_selected_profile(self):
         with patch('native_host.profile',lambda:self.profile):
             self.assertEqual(active_profile({'profileId':'new'})['resourceManifestSHA256'],sha(b'new-manifest'))
